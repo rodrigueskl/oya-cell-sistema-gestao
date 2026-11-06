@@ -6,11 +6,11 @@ Projeto acadêmico de modelagem de um sistema de gestão de informações para a
 ## Metadados
 
 - **Nome dos alunos e RGM:**
-  - Leonardo Oliveira Rodrigues — 47569590 
-  - Lucas Gabriel Roman Martins  - 46847618
-  - Gabriel Arnaldo Da Silva - 47480441
-  - Emily Mayara Matos Moreira - 47323523
-  - Kauã Gomes da Silva - 47262265
+  - Leonardo Oliveira Rodrigues — 47569590
+  - Lucas Gabriel Roman Martins — 46847618 — GitHub: lucasroman280-collab
+  - Gabriel Arnaldo Da Silva — 47480441 — GitHub: g7373hsh-glitch
+  - Emily Mayara Matos Moreira — 47323523 — GitHub: emilymayara256
+  - Kauã Gomes da Silva — 47262265
 
 ---
 
@@ -43,7 +43,9 @@ Além disso, os problemas relacionados à organização dos pedidos e ao control
 - **Endereço:** Rua Barão de Duplat, 389
 - **Contato:** (11) 98387-1006
 - **Data da entrevista:** 19/09
-- **Nome e função do responsável entrevistado:** A preencher
+- **Nome e função do responsável entrevistado:** Nader — Gerente
+- **Telefone do responsável:** (11) 95389-9241
+- **E-mail corporativo:** oyacell@icloud.com
 
 #### Registro da visita de campo
 
@@ -436,3 +438,93 @@ O uso da Inteligência Artificial facilitou o entendimento de alguns conceitos e
 
 Por esse motivo, foi necessário analisar as sugestões e compará-las com as informações obtidas durante a pesquisa de campo. Dessa forma, a IA foi utilizada como ferramenta de apoio, enquanto as decisões finais foram tomadas pelo grupo com base nas informações da Oya Cell e nos conhecimentos adquiridos durante a disciplina.
 
+
+---
+
+# Entrega 2 — Complemento: Modelo Lógico, Implementação SQL e Apresentação Final
+
+> Esta seção complementa a Entrega 1 acima. Nenhuma informação da caracterização, dos processos, requisitos, regras ou modelagem anterior foi removida.
+
+## 1.1 Revisão do modelo conceitual
+
+A revisão da Entrega 2 mantém a Oya Cell, seus aproximadamente 7 funcionários, a média informada de 25 atendimentos por dia e os canais balcão, telefone e WhatsApp. Os problemas continuam sendo: **P1**, organização dos pedidos; **P2**, rastreabilidade do estoque; e **P3**, histórico de cancelamentos e estornos.
+
+As alterações principais foram: inclusão de `estoque_minimo` em PRODUTO; inclusão de `id_pedido` opcional em MOVIMENTACAO_ESTOQUE para rastrear saídas de venda; definição de chave composta em FUNCIONARIO_PEDIDO; e inclusão de `data_cancelamento` e `motivo_cancelamento` em PEDIDO. O DER conceitual revisado está em [`diagramas/DER_conceitual_oya_cell.png`](diagramas/DER_conceitual_oya_cell.png), sem tipos de dados e sem chaves estrangeiras.
+
+O entrevistado é Nader, gerente da Oya Cell. O telefone de contato é (11) 95389-9241 e o e-mail corporativo é oyacell@icloud.com. A entrevista ocorreu em 19/09/2026. Participaram Lucas Gabriel Roman Martins, Gabriel Arnaldo da Silva, Emily Mayara Matos Moreira e Kauã Gomes da Silva. O levantamento complementar está em [`levantamento/levantamento.md`](levantamento/levantamento.md).
+
+| Apontamento ou risco | Alteração realizada | Motivo |
+|---|---|---|
+| O DER anterior apresentava tipos, PKs e FKs | Criado DER conceitual separado | Distinguir modelo conceitual do lógico |
+| Estoque mínimo não estava explícito | Incluído `estoque_minimo` | Permitir KPI de reposição |
+| Saída não identificava pedido de origem | Incluído `id_pedido` opcional | Atender RN10 e rastreabilidade |
+| Participação funcionário–pedido precisava de unicidade | Criada PK composta | Evitar duplicidades |
+| Cancelamento precisava manter contexto | Incluídas data e motivo | Atender P3 e RN15 |
+
+**Ferramentas:** Mermaid para os diagramas versionados e diagrams.net/Draw.io para o arquivo editável. Consulte também [`diagramas/DER_Oya_Cell_Entrega2.drawio`](diagramas/DER_Oya_Cell_Entrega2.drawio).
+
+## 1.2 Conversão do modelo conceitual para o lógico
+
+Cada entidade foi convertida em tabela e cada atributo em coluna. Os relacionamentos 1:N foram implementados com FKs no lado N. Os relacionamentos N:N PEDIDO–PRODUTO e FUNCIONARIO–PEDIDO foram convertidos, respectivamente, para ITEM_PEDIDO e FUNCIONARIO_PEDIDO. Entradas de estoque não possuem pedido de venda; saídas possuem `id_pedido` para rastreamento. Não há generalização/especialização no escopo atual.
+
+O modelo lógico está em [`diagramas/modelo_logico_oya_cell.png`](diagramas/modelo_logico_oya_cell.png) e [`diagramas/modelo_logico_oya_cell.mmd`](diagramas/modelo_logico_oya_cell.mmd).
+
+## 1.3 Chaves primárias e estrangeiras
+
+| Tabela | PK | FKs |
+|---|---|---|
+| CLIENTE | `id_cliente` | — |
+| PRODUTO | `id_produto` | — |
+| FUNCIONARIO | `id_funcionario` | — |
+| PEDIDO | `id_pedido` | `id_cliente → CLIENTE` |
+| ITEM_PEDIDO | `id_item` | `id_pedido → PEDIDO`; `id_produto → PRODUTO` |
+| PAGAMENTO | `id_pagamento` | `id_pedido → PEDIDO` |
+| FUNCIONARIO_PEDIDO | `id_funcionario`, `id_pedido` | FUNCIONARIO e PEDIDO |
+| MOVIMENTACAO_ESTOQUE | `id_movimentacao` | PRODUTO, FUNCIONARIO e PEDIDO opcional |
+| ESTORNO | `id_estorno` | `id_pagamento → PAGAMENTO` |
+
+## 1.4 Normalização
+
+Na 1FN, grupos repetitivos foram separados em ITEM_PEDIDO, PAGAMENTO e MOVIMENTACAO_ESTOQUE. Na 2FN, os atributos das tabelas associativas dependem da chave inteira, especialmente `participacao` em FUNCIONARIO_PEDIDO. Na 3FN, os dados de cliente, produto, funcionário e pagamento ficam em suas próprias tabelas, evitando dependências transitivas e repetição de dados. `subtotal` é coluna gerada; a consulta A05 audita a consistência de `valor_total`.
+
+## 1.5 Justificativas técnicas
+
+As PKs inteiras são identificadores estáveis. `cpf_cnpj` e `codigo` possuem UNIQUE por serem identificadores de negócio. FKs impedem registros órfãos. `NOT NULL` representa dados obrigatórios; `CHECK` evita valores negativos; `ENUM` controla status, formas de pagamento, recebimento e tipos de movimentação. Cancelamentos permanecem armazenados e estornos são registrados em tabela própria.
+
+## 1.6 Arquitetura analítica para BI e IA
+
+O modelo apoia indicadores de faturamento mensal, ticket médio, taxa de cancelamento, valor estornado, produtos abaixo do estoque mínimo e itens mais movimentados. PEDIDO, ITEM_PEDIDO e PAGAMENTO sustentam o painel comercial; PRODUTO e MOVIMENTACAO_ESTOQUE sustentam o painel de estoque; CLIENTE e FUNCIONARIO permitem análises de relacionamento e rastreabilidade.
+
+| Problema ou KPI | Tabelas | Consulta |
+|---|---|---|
+| P1 — pedidos organizados | PEDIDO, CLIENTE, ITEM_PEDIDO, PRODUTO | G01, G05 |
+| P2 — estoque abaixo do mínimo | PRODUTO | G02 |
+| P3 — cancelamentos e estornos | PEDIDO, PAGAMENTO, ESTORNO | G04, A02 |
+| Faturamento mensal | PEDIDO | G01 |
+| Ticket médio | PEDIDO | G03 |
+| Produtos mais movimentados | PRODUTO, MOVIMENTACAO_ESTOQUE | G06 |
+| Valor do pedido consistente | PEDIDO, ITEM_PEDIDO | A05 |
+
+## 2. Modelo lógico relacional
+
+O modelo lógico apresenta tabelas, tipos, PKs, FKs e cardinalidades convertidas. As demais restrições estão no dicionário e no script SQL. Artefatos: [`diagramas/modelo_logico_oya_cell.png`](diagramas/modelo_logico_oya_cell.png) e [`diagramas/modelo_logico_oya_cell.mmd`](diagramas/modelo_logico_oya_cell.mmd).
+
+## 3. Script SQL completo
+
+O arquivo [`docs/script_oya_cell.sql`](docs/script_oya_cell.sql) contém `CREATE DATABASE`, tabelas, constraints, massa fictícia, `SELECT` com JOIN, `UPDATE`, `DELETE`, consultas gerenciais G01–G06 e auditorias A01–A06. O script foi escrito para MySQL 8.0+ com InnoDB, CHECK, ENUM e coluna gerada para subtotal.
+
+## 4. Massa de dados
+
+A massa é fictícia e contém 12 clientes, 16 produtos, 7 funcionários e 18 pedidos, com itens, pagamentos, participações, entradas, saídas e estornos. Foram incluídos pedidos finalizados, em separação, em entrega e cancelados, além de produtos abaixo do estoque mínimo, para demonstrar as consultas.
+
+## 5. Repositório e evidências
+
+Os novos artefatos estão em `docs/`, `diagramas/` e `levantamento/`. O dicionário HTML foi atualizado. Antes da submissão, preencher nome e função do entrevistado, ano da entrevista, integrantes participantes, link público da organização e usuários GitHub. A imagem existente é `Evidencias/visita_oya_cell.jpeg`.
+
+## 6. Uso de Inteligência Artificial
+
+Além do uso já declarado na Entrega 1, a IA apoiou a organização do modelo lógico, a normalização, a criação de uma massa fictícia, a elaboração de consultas gerenciais e de auditoria e a revisão da documentação. As sugestões foram adaptadas ao escopo da Oya Cell; dados reais não foram utilizados. O grupo deve acrescentar os prompts exatos usados na finalização e registrar ajustes manuais após o teste no MySQL.
+
+## 7. Apresentação corporativa final
+
+A apresentação segue a ordem solicitada: problema, solução, modelo lógico, implementação SQL, consultas, BI/IA e benefícios. O roteiro previsto é de aproximadamente 8 minutos. A apresentação criada está disponível em [Oya Cell — Entrega 2](manus-resource://manus-slides/deck/oya-cell-entrega-2-mw49tdte-4ea5d401).
