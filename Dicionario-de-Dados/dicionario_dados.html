@@ -493,6 +493,20 @@
         identificadas nos processos de pedidos e controle de estoque da Oya Cell.
     </p>
 
+
+<h2>Apêndice — Entrega 2: restrições do modelo lógico</h2>
+<p>Este apêndice complementa o dicionário conceitual da Entrega 1. A implementação completa está em <code>docs/script_oya_cell.sql</code>.</p>
+<table><tr><th>Tabela/coluna</th><th>Tipo lógico</th><th>Restrições</th><th>Descrição</th></tr>
+<tr><td>PRODUTO.estoque_minimo</td><td>INT</td><td>NOT NULL, DEFAULT 5, CHECK &gt;= 0</td><td>Limite para alertar reposição.</td></tr>
+<tr><td>PEDIDO.status</td><td>ENUM</td><td>NOT NULL; EM_SEPARACAO, SAIU_PARA_ENTREGA, FINALIZADO, CANCELADO</td><td>Situação do pedido.</td></tr>
+<tr><td>PEDIDO.forma_recebimento</td><td>ENUM</td><td>NOT NULL; BALCAO ou ENTREGA</td><td>Forma de recebimento.</td></tr>
+<tr><td>PEDIDO.data_cancelamento</td><td>DATETIME</td><td>NULL; obrigatória se status=CANCELADO</td><td>Data do cancelamento.</td></tr>
+<tr><td>PEDIDO.motivo_cancelamento</td><td>VARCHAR(255)</td><td>NULL</td><td>Motivo preservado no histórico.</td></tr>
+<tr><td>ITEM_PEDIDO.subtotal</td><td>DECIMAL(10,2)</td><td>GENERATED ALWAYS AS quantidade × preco_unitario</td><td>Subtotal do item.</td></tr>
+<tr><td>FUNCIONARIO_PEDIDO</td><td>—</td><td>PK composta (id_funcionario, id_pedido); duas FKs</td><td>Resolve o relacionamento N:N.</td></tr>
+<tr><td>MOVIMENTACAO_ESTOQUE.id_pedido</td><td>INT</td><td>FK, NULL para ENTRADA</td><td>Pedido de origem da saída.</td></tr>
+<tr><td>ESTORNO.percentual_estorno</td><td>DECIMAL(5,2)</td><td>NOT NULL, CHECK IN (60,100)</td><td>Percentual aplicado no cancelamento.</td></tr>
+</table>
 </body>
 
 </html>
