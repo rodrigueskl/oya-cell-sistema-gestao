@@ -1,0 +1,79 @@
+erDiagram
+    CLIENTE ||--o{ PEDIDO : FK
+    PEDIDO ||--|{ ITEM_PEDIDO : FK
+    PRODUTO ||--o{ ITEM_PEDIDO : FK
+    PEDIDO ||--|{ PAGAMENTO : FK
+    FUNCIONARIO ||--o{ FUNCIONARIO_PEDIDO : FK
+    PEDIDO ||--o{ FUNCIONARIO_PEDIDO : FK
+    PRODUTO ||--o{ MOVIMENTACAO_ESTOQUE : FK
+    FUNCIONARIO ||--o{ MOVIMENTACAO_ESTOQUE : FK
+    PEDIDO o|--o{ MOVIMENTACAO_ESTOQUE : FK
+    PAGAMENTO ||--o{ ESTORNO : FK
+
+    CLIENTE {
+        INT id_cliente PK
+        VARCHAR nome
+        VARCHAR cpf_cnpj UK
+        VARCHAR contato
+    }
+    PRODUTO {
+        INT id_produto PK
+        VARCHAR codigo UK
+        VARCHAR descricao
+        VARCHAR categoria
+        DECIMAL preco
+        INT quantidade_estoque
+        INT estoque_minimo
+    }
+    PEDIDO {
+        INT id_pedido PK
+        DATETIME data_pedido
+        DECIMAL valor_total
+        ENUM status
+        ENUM forma_recebimento
+        INT id_cliente FK
+        DATETIME data_cancelamento
+        VARCHAR_255 motivo_cancelamento
+    }
+    ITEM_PEDIDO {
+        INT id_item PK
+        INT id_pedido FK
+        INT id_produto FK
+        INT quantidade
+        DECIMAL preco_unitario
+        DECIMAL subtotal
+    }
+    PAGAMENTO {
+        INT id_pagamento PK
+        INT id_pedido FK
+        ENUM forma_pagamento
+        DECIMAL valor
+        DATETIME data_pagamento
+        ENUM status_pagamento
+    }
+    FUNCIONARIO {
+        INT id_funcionario PK
+        VARCHAR nome
+        VARCHAR funcao
+    }
+    FUNCIONARIO_PEDIDO {
+        INT id_funcionario PK
+        INT id_pedido PK
+        VARCHAR participacao
+    }
+    MOVIMENTACAO_ESTOQUE {
+        INT id_movimentacao PK
+        INT id_produto FK
+        INT id_funcionario FK
+        INT id_pedido FK
+        ENUM tipo_movimentacao
+        INT quantidade
+        DATETIME data_movimentacao
+    }
+    ESTORNO {
+        INT id_estorno PK
+        INT id_pagamento FK
+        DECIMAL valor_estornado
+        DECIMAL percentual_estorno
+        DATETIME data_estorno
+    }
