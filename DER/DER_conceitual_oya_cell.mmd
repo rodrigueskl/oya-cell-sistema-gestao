@@ -1,0 +1,68 @@
+erDiagram
+    CLIENTE ||--o{ PEDIDO : realiza
+    PEDIDO ||--|{ ITEM_PEDIDO : possui
+    PRODUTO ||--o{ ITEM_PEDIDO : compoe
+    PEDIDO ||--|{ PAGAMENTO : recebe
+    FUNCIONARIO ||--o{ FUNCIONARIO_PEDIDO : participa
+    PEDIDO ||--o{ FUNCIONARIO_PEDIDO : envolve
+    PRODUTO ||--o{ MOVIMENTACAO_ESTOQUE : movimenta
+    FUNCIONARIO ||--o{ MOVIMENTACAO_ESTOQUE : registra
+    PEDIDO o|--o{ MOVIMENTACAO_ESTOQUE : origina
+    PAGAMENTO ||--o{ ESTORNO : pode_gerar
+
+    CLIENTE {
+        identificador id_cliente
+        nome nome
+        documento cpf_cnpj
+        contato contato
+    }
+    PRODUTO {
+        identificador id_produto
+        codigo codigo
+        descricao descricao
+        categoria categoria
+        preco preco
+        estoque_atual quantidade_estoque
+        estoque_minimo estoque_minimo
+    }
+    PEDIDO {
+        identificador id_pedido
+        data data_pedido
+        valor valor_total
+        situacao status
+        recebimento forma_recebimento
+        cancelamento motivo_cancelamento
+    }
+    ITEM_PEDIDO {
+        identificador id_item
+        quantidade quantidade
+        preco_historico preco_unitario
+        subtotal subtotal
+    }
+    PAGAMENTO {
+        identificador id_pagamento
+        forma forma_pagamento
+        valor valor
+        data data_pagamento
+        situacao status_pagamento
+    }
+    FUNCIONARIO {
+        identificador id_funcionario
+        nome nome
+        funcao funcao
+    }
+    FUNCIONARIO_PEDIDO {
+        participacao participacao
+    }
+    MOVIMENTACAO_ESTOQUE {
+        identificador id_movimentacao
+        tipo tipo_movimentacao
+        quantidade quantidade
+        data data_movimentacao
+    }
+    ESTORNO {
+        identificador id_estorno
+        valor valor_estornado
+        percentual percentual_estorno
+        data data_estorno
+    }
